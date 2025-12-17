@@ -120,6 +120,13 @@ export const DataProvider = ({ children }) => {
     address: 'Millennium Techlink Private Limited, 17/18/19, 2nd Floor, Mahalaxmi Heights, Mumbai-Pune Road, Pimpri, Pune 411 018, Maharashtra, INDIA',
     phone: '+1 (555) 123-4567',
     email: 'sarah.chen@techcorp.com',
+    designation: 'Senior Engineer',
+    membershipLevel: 'Premium',
+    industry: 'Technology',
+    accountType: 'Business',
+    emailAddresses: [
+      { email: 'sarah.chen@techcorp.com', verified: true, addedAt: '1 month ago' }
+    ]
   }))
 
   // Documents state

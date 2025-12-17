@@ -156,13 +156,13 @@ function Calibration() {
           <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
           <p className="text-xl mb-6 text-purple-100">Starting from $79 per project</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/product-details">
+            <Link to="/services/calibration/start">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="px-8 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:shadow-lg transition-all"
               >
-                Start Your Project
+                Start Calibration Request
               </motion.button>
             </Link>
             <Link to="/pricing">

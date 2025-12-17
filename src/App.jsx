@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Toaster } from 'react-hot-toast'
-import { lazy, Suspense, useEffect } from 'react'
+import { useEffect } from 'react'
 import { RoleProvider } from './contexts/RoleContext'
 import { DataProvider } from './contexts/DataContext'
 import { LabDataProvider } from './contexts/LabDataContext'
@@ -41,26 +41,6 @@ import LabQueue from './pages/lab/Queue'
 import LabSchedule from './pages/lab/Schedule'
 import RequestDetail from './pages/lab/RequestDetail'
 import PortalSelection from './pages/lab/PortalSelection'
-import LabManagementLayout from './layouts/LabManagementLayout'
-
-// Lazy load lab management pages for better performance
-const LabManagementDashboard = lazy(() => import('./pages/lab/management/Dashboard'))
-const LabManagementCustomers = lazy(() => import('./pages/lab/management/Customers'))
-const LabManagementProjects = lazy(() => import('./pages/lab/management/Projects'))
-const LabManagementRFQs = lazy(() => import('./pages/lab/management/RFQs'))
-const LabManagementEstimations = lazy(() => import('./pages/lab/management/Estimations'))
-const LabManagementTestPlans = lazy(() => import('./pages/lab/management/TestPlans'))
-const LabManagementTestExecutions = lazy(() => import('./pages/lab/management/TestExecutions'))
-const LabManagementTestResults = lazy(() => import('./pages/lab/management/TestResults'))
-const LabManagementSamples = lazy(() => import('./pages/lab/management/Samples'))
-const LabManagementTRFs = lazy(() => import('./pages/lab/management/TRFs'))
-const LabManagementDocuments = lazy(() => import('./pages/lab/management/Documents'))
-const LabManagementReports = lazy(() => import('./pages/lab/management/Reports'))
-const LabManagementAudits = lazy(() => import('./pages/lab/management/Audits'))
-const LabManagementNCRs = lazy(() => import('./pages/lab/management/NCRs'))
-const LabManagementCertifications = lazy(() => import('./pages/lab/management/Certifications'))
-const ProjectDetail = lazy(() => import('./pages/lab/management/ProjectDetail'))
-const PlaceholderPage = lazy(() => import('./pages/lab/management/PlaceholderPage'))
 
 // Loading component
 const PageLoader = () => (
@@ -75,9 +55,14 @@ const PageLoader = () => (
 import Design from './pages/services/Design'
 import Testing from './pages/services/Testing'
 import Calibration from './pages/services/Calibration'
+import CalibrationFlow from './pages/services/CalibrationFlow'
 import Simulation from './pages/services/Simulation'
+import SimulationFlow from './pages/services/SimulationFlow'
 import Debugging from './pages/services/Debugging'
+import ProductDebuggingFlow from './pages/services/ProductDebuggingFlow'
+import CertificationFlow from './pages/services/CertificationFlow'
 import Certification from './pages/services/Certification'
+import JRFFlow from './pages/jrf/JRFFlow'
 
 // ScrollToTop component to scroll to top on route change
 function ScrollToTop() {
@@ -287,6 +272,76 @@ function AnimatedRoutes() {
           }
         />
         <Route
+          path="/services/testing/start"
+          element={
+            <motion.div
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <JRFFlow />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/services/calibration/start"
+          element={
+            <motion.div
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <CalibrationFlow />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/services/simulation/start"
+          element={
+            <motion.div
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <SimulationFlow />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/services/product-debugging/start"
+          element={
+            <motion.div
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <ProductDebuggingFlow />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/services/certification/start"
+          element={
+            <motion.div
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <CertificationFlow />
+            </motion.div>
+          }
+        />
+        <Route
           path="/services/calibration"
           element={
             <motion.div
@@ -360,7 +415,7 @@ function AnimatedRoutes() {
         <Route path="/jrf/testing-requirements" element={<TestingRequirements />} />
         <Route path="/jrf/testing-standards" element={<TestingStandards />} />
         <Route path="/jrf/labs-review" element={<LabsReview />} />
-        {/* Lab Area */}
+        {/* Lab Area (portal + simple lab dashboard) */}
         <Route path="/lab/portal" element={<PortalSelection />} />
         <Route path="/lab/login" element={<LabLogin />} />
         <Route path="/lab/signup" element={<LabSignupPersonal />} />
@@ -370,31 +425,6 @@ function AnimatedRoutes() {
           <Route path="queue" element={<LabQueue />} />
           <Route path="queue/:id" element={<RequestDetail />} />
           <Route path="schedule" element={<LabSchedule />} />
-        </Route>
-        {/* Lab Management System */}
-        <Route path="/lab/management" element={<LabManagementLayout />}>
-          <Route path="dashboard" element={<Suspense fallback={<PageLoader />}><LabManagementDashboard /></Suspense>} />
-          <Route path="customers" element={<Suspense fallback={<PageLoader />}><LabManagementCustomers /></Suspense>} />
-          <Route path="rfqs" element={<Suspense fallback={<PageLoader />}><LabManagementRFQs /></Suspense>} />
-          <Route path="estimations" element={<Suspense fallback={<PageLoader />}><LabManagementEstimations /></Suspense>} />
-          <Route path="projects" element={<Suspense fallback={<PageLoader />}><LabManagementProjects /></Suspense>} />
-          <Route path="projects/:id" element={<Suspense fallback={<PageLoader />}><ProjectDetail /></Suspense>} />
-          <Route path="test-plans" element={<Suspense fallback={<PageLoader />}><LabManagementTestPlans /></Suspense>} />
-          <Route path="test-plans/:id" element={<Suspense fallback={<PageLoader />}><PlaceholderPage title="Test Plan Details" description="Detailed test plan information" /></Suspense>} />
-          <Route path="test-executions" element={<Suspense fallback={<PageLoader />}><LabManagementTestExecutions /></Suspense>} />
-          <Route path="test-executions/:id" element={<Suspense fallback={<PageLoader />}><PlaceholderPage title="Test Execution Details" description="Detailed test execution information" /></Suspense>} />
-          <Route path="test-results" element={<Suspense fallback={<PageLoader />}><LabManagementTestResults /></Suspense>} />
-          <Route path="test-results/:id" element={<Suspense fallback={<PageLoader />}><PlaceholderPage title="Test Result Details" description="Detailed test result information" /></Suspense>} />
-          <Route path="samples" element={<Suspense fallback={<PageLoader />}><LabManagementSamples /></Suspense>} />
-          <Route path="samples/:id" element={<Suspense fallback={<PageLoader />}><PlaceholderPage title="Sample Details" description="Detailed sample information" /></Suspense>} />
-          <Route path="trfs" element={<Suspense fallback={<PageLoader />}><LabManagementTRFs /></Suspense>} />
-          <Route path="trfs/:id" element={<Suspense fallback={<PageLoader />}><PlaceholderPage title="TRF Details" description="Detailed TRF information" /></Suspense>} />
-          <Route path="documents" element={<Suspense fallback={<PageLoader />}><LabManagementDocuments /></Suspense>} />
-          <Route path="documents/:id" element={<Suspense fallback={<PageLoader />}><PlaceholderPage title="Document Details" description="Detailed document information" /></Suspense>} />
-          <Route path="reports" element={<Suspense fallback={<PageLoader />}><LabManagementReports /></Suspense>} />
-          <Route path="audits" element={<Suspense fallback={<PageLoader />}><LabManagementAudits /></Suspense>} />
-          <Route path="ncrs" element={<Suspense fallback={<PageLoader />}><LabManagementNCRs /></Suspense>} />
-          <Route path="certifications" element={<Suspense fallback={<PageLoader />}><LabManagementCertifications /></Suspense>} />
         </Route>
       </Routes>
     </AnimatePresence>
@@ -406,15 +436,14 @@ function AppContent() {
   const isLabDashboardRoute = location.pathname.startsWith('/lab/dashboard') || 
                                location.pathname.startsWith('/lab/queue') || 
                                location.pathname.startsWith('/lab/schedule')
-  const isLabManagementRoute = location.pathname.startsWith('/lab/management')
   const isLabAuthRoute = location.pathname.startsWith('/lab/login') || 
                          location.pathname.startsWith('/lab/signup')
   const isCustomerDashboardRoute = location.pathname.startsWith('/customer/')
   
-  // Hide main header/footer on lab dashboard, lab management, and customer dashboard (they have their own layouts)
+  // Hide main header/footer on lab dashboard and customer dashboard (they have their own layouts)
   // But show on lab auth pages and portal selection so users can switch roles
-  const showMainHeader = !isLabDashboardRoute && !isLabManagementRoute && !isCustomerDashboardRoute
-  const showMainFooter = !isLabDashboardRoute && !isLabManagementRoute && !isCustomerDashboardRoute
+  const showMainHeader = !isLabDashboardRoute && !isCustomerDashboardRoute
+  const showMainFooter = !isLabDashboardRoute && !isCustomerDashboardRoute
 
   return (
     <div className="min-h-screen flex flex-col">

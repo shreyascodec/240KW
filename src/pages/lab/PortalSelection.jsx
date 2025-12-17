@@ -46,12 +46,12 @@ function PortalSelection() {
             Lab Portal
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Choose how you want to access the lab management system
+            Access the lab portal for managing projects, queues, and schedules.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Projects Button */}
+        <div className="grid md:grid-cols-1 gap-8">
+          {/* Lab Portal Button */}
           <motion.div variants={itemVariants}>
             <Link to="/lab/dashboard">
               <motion.div
@@ -65,13 +65,13 @@ function PortalSelection() {
                     <FolderKanban className="w-8 h-8 text-white" />
                   </div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-3">
-                    Projects
+                    Lab Portal
                   </h2>
                   <p className="text-gray-600 mb-6 leading-relaxed">
-                    Access the lab portal for managing projects, queues, and schedules. View and manage testing requests, track project progress, and coordinate lab activities.
+                    Manage lab projects, queues, and schedules. View and manage testing requests, track project progress, and coordinate lab activities.
                   </p>
                   <div className="flex items-center text-primary font-semibold group-hover:gap-3 transition-all">
-                    <span>Access Projects</span>
+                    <span>Enter Lab Portal</span>
                     <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
@@ -79,33 +79,6 @@ function PortalSelection() {
             </Link>
           </motion.div>
 
-          {/* Lab Management System Button */}
-          <motion.div variants={itemVariants}>
-            <Link to="/lab/management/dashboard">
-              <motion.div
-                whileHover={{ scale: 1.02, y: -4 }}
-                whileTap={{ scale: 0.98 }}
-                className="group relative h-full bg-white rounded-2xl p-8 shadow-lg border-2 border-purple-200 hover:border-purple-600 transition-all cursor-pointer overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="relative z-10">
-                  <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
-                    <FlaskConical className="w-8 h-8 text-white" />
-                  </div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-3">
-                    Lab Management System
-                  </h2>
-                  <p className="text-gray-600 mb-6 leading-relaxed">
-                    Comprehensive lab management platform with customers, RFQs, test plans, executions, samples, TRFs, documents, reports, audits, NCRs, and certifications.
-                  </p>
-                  <div className="flex items-center text-purple-600 font-semibold group-hover:gap-3 transition-all">
-                    <span>Access Lab Management</span>
-                    <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </div>
-              </motion.div>
-            </Link>
-          </motion.div>
         </div>
       </motion.div>
     </div>

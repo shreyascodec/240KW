@@ -157,13 +157,13 @@ function Certification() {
           <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
           <p className="text-xl mb-6 text-indigo-100">Starting from $299 per project</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/product-details">
+            <Link to="/services/certification/start">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="px-8 py-3 bg-white text-indigo-600 rounded-lg font-semibold hover:shadow-lg transition-all"
               >
-                Start Your Project
+                Start Certification Submission
               </motion.button>
             </Link>
             <Link to="/pricing">
