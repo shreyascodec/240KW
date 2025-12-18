@@ -19,7 +19,7 @@ import { useData } from '../../contexts/DataContext'
 
 function CalibrationFlow() {
   const navigate = useNavigate()
-  const { addProduct, addOrder, addMessage } = useData()
+  const { addProduct, addOrder, addMessage, addEquipment } = useData()
 
   const [currentStep, setCurrentStep] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -176,6 +176,48 @@ function CalibrationFlow() {
         formData.calibrationType === 'instrument'
           ? formData.instrumentType || 'Instrument Calibration'
           : formData.chamberType || 'Chamber Calibration'
+
+      // Prepare equipment data for API submission
+      const equipmentData = {
+        calibrationType: formData.calibrationType,
+        equipmentType: formData.calibrationType === 'instrument' ? formData.instrumentType : formData.chamberType,
+        modelNumber: formData.modelNumber,
+        serialNumber: formData.serialNumber,
+        manufacturer: formData.manufacturer,
+        equipmentCondition: formData.equipmentCondition,
+        scope: {
+          full: formData.scopeFull,
+          functional: formData.scopeFunctional,
+          adjustment: formData.scopeAdjustment,
+          specificParams: formData.specificParams,
+        },
+        parameters: {
+          voltageRange: formData.voltageRange,
+          currentRange: formData.currentRange,
+          frequencyRange: formData.frequencyRange,
+          powerRange: formData.powerRange,
+        },
+        workOrder: {
+          workOrderNumber: formData.workOrderNumber,
+          jobId: formData.jobId,
+          preferredDate: formData.preferredDate,
+          urgentService: formData.urgentService,
+        },
+        serviceMode: formData.serviceMode,
+        calibrationLocation: formData.calibrationLocation,
+        specialInstructions: formData.specialInstructions,
+        previousCert: formData.previousCert,
+        additionalDocs: formData.additionalDocs,
+      }
+
+      // Submit equipment to API
+      const equipmentResult = await addEquipment(equipmentData)
+      
+      if (!equipmentResult.success) {
+        toast.error(equipmentResult.error || 'Failed to submit equipment. Please try again.')
+        setIsSubmitting(false)
+        return
+      }
 
       const product = addProduct({
         name: `${nameBase} Calibration`,
