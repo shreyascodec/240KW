@@ -163,7 +163,7 @@ function Simulation() {
                 whileTap={{ scale: 0.95 }}
                 className="px-8 py-3 bg-white text-orange-600 rounded-lg font-semibold hover:shadow-lg transition-all"
               >
-                Start Your Simulation Project
+                Start Your Project
               </motion.button>
             </Link>
             <Link to="/pricing">

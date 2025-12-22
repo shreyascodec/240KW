@@ -163,7 +163,7 @@ function Certification() {
                 whileTap={{ scale: 0.95 }}
                 className="px-8 py-3 bg-white text-indigo-600 rounded-lg font-semibold hover:shadow-lg transition-all"
               >
-                Start Certification Submission
+                Start Your Project
               </motion.button>
             </Link>
             <Link to="/pricing">

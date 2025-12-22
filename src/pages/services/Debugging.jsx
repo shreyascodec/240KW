@@ -163,7 +163,7 @@ function Debugging() {
                 whileTap={{ scale: 0.95 }}
                 className="px-8 py-3 bg-white text-red-600 rounded-lg font-semibold hover:shadow-lg transition-all"
               >
-                Start Debugging Request
+                Start Your Project
               </motion.button>
             </Link>
             <Link to="/pricing">

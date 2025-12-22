@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import { submitEquipment, fetchEquipment, updateEquipment, deleteEquipment, getEquipmentById } from '../services/equipmentApi'
 
 const DataContext = createContext()
 
@@ -162,11 +161,6 @@ export const DataProvider = ({ children }) => {
     smsNotifications: false,
   }))
 
-  // Equipment state - fetched from API
-  const [equipment, setEquipment] = useState([])
-  const [equipmentLoading, setEquipmentLoading] = useState(false)
-  const [equipmentError, setEquipmentError] = useState(null)
-
   // Save to localStorage whenever state changes
   useEffect(() => {
     saveToStorage('techlink_products', products)
@@ -191,116 +185,6 @@ export const DataProvider = ({ children }) => {
   useEffect(() => {
     saveToStorage('techlink_settings', settings)
   }, [settings])
-
-  // Fetch equipment on mount
-  useEffect(() => {
-    loadEquipment()
-  }, [])
-
-  // Equipment API functions
-  const loadEquipment = async () => {
-    setEquipmentLoading(true)
-    setEquipmentError(null)
-    try {
-      const result = await fetchEquipment()
-      if (result.success) {
-        setEquipment(result.equipment || [])
-      } else {
-        setEquipmentError(result.message || 'Failed to load equipment')
-        // Fallback to localStorage if API fails
-        const fallback = loadFromStorage('techlink_equipment', [])
-        setEquipment(fallback)
-      }
-    } catch (error) {
-      console.error('Error loading equipment:', error)
-      setEquipmentError('Failed to load equipment')
-      // Fallback to localStorage
-      const fallback = loadFromStorage('techlink_equipment', [])
-      setEquipment(fallback)
-    } finally {
-      setEquipmentLoading(false)
-    }
-  }
-
-  const addEquipment = async (equipmentData) => {
-    setEquipmentLoading(true)
-    setEquipmentError(null)
-    try {
-      const result = await submitEquipment(equipmentData)
-      if (result.success) {
-        // Refresh equipment list after successful submission
-        await loadEquipment()
-        return { success: true, data: result.data }
-      } else {
-        setEquipmentError(result.message || 'Failed to submit equipment')
-        return { success: false, error: result.error }
-      }
-    } catch (error) {
-      console.error('Error submitting equipment:', error)
-      setEquipmentError('Failed to submit equipment')
-      return { success: false, error: error.message }
-    } finally {
-      setEquipmentLoading(false)
-    }
-  }
-
-  const updateEquipmentItem = async (id, updates) => {
-    setEquipmentLoading(true)
-    setEquipmentError(null)
-    try {
-      const result = await updateEquipment(id, updates)
-      if (result.success) {
-        // Refresh equipment list after successful update
-        await loadEquipment()
-        return { success: true, data: result.data }
-      } else {
-        setEquipmentError(result.message || 'Failed to update equipment')
-        return { success: false, error: result.error }
-      }
-    } catch (error) {
-      console.error('Error updating equipment:', error)
-      setEquipmentError('Failed to update equipment')
-      return { success: false, error: error.message }
-    } finally {
-      setEquipmentLoading(false)
-    }
-  }
-
-  const removeEquipment = async (id) => {
-    setEquipmentLoading(true)
-    setEquipmentError(null)
-    try {
-      const result = await deleteEquipment(id)
-      if (result.success) {
-        // Refresh equipment list after successful deletion
-        await loadEquipment()
-        return { success: true }
-      } else {
-        setEquipmentError(result.message || 'Failed to delete equipment')
-        return { success: false, error: result.error }
-      }
-    } catch (error) {
-      console.error('Error deleting equipment:', error)
-      setEquipmentError('Failed to delete equipment')
-      return { success: false, error: error.message }
-    } finally {
-      setEquipmentLoading(false)
-    }
-  }
-
-  const getEquipment = async (id) => {
-    try {
-      const result = await getEquipmentById(id)
-      if (result.success) {
-        return { success: true, data: result.data }
-      } else {
-        return { success: false, error: result.error }
-      }
-    } catch (error) {
-      console.error('Error fetching equipment:', error)
-      return { success: false, error: error.message }
-    }
-  }
 
   // Product functions
   const addProduct = (product) => {
@@ -376,9 +260,6 @@ export const DataProvider = ({ children }) => {
     profile,
     documents,
     settings,
-    equipment,
-    equipmentLoading,
-    equipmentError,
     setProducts,
     setOrders,
     setMessages,
@@ -394,12 +275,6 @@ export const DataProvider = ({ children }) => {
     deleteMessage,
     addDocument,
     deleteDocument,
-    // Equipment API functions
-    loadEquipment,
-    addEquipment,
-    updateEquipmentItem,
-    removeEquipment,
-    getEquipment,
   }
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>

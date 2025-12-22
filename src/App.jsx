@@ -53,15 +53,16 @@ const PageLoader = () => (
 )
 
 import Design from './pages/services/Design'
+import DesignFlow from './pages/services/DesignFlow'
 import Testing from './pages/services/Testing'
 import Calibration from './pages/services/Calibration'
 import CalibrationFlow from './pages/services/CalibrationFlow'
 import Simulation from './pages/services/Simulation'
 import SimulationFlow from './pages/services/SimulationFlow'
 import Debugging from './pages/services/Debugging'
-import ProductDebuggingFlow from './pages/services/ProductDebuggingFlow'
-import CertificationFlow from './pages/services/CertificationFlow'
+import DebuggingFlow from './pages/services/DebuggingFlow'
 import Certification from './pages/services/Certification'
+import CertificationFlow from './pages/services/CertificationFlow'
 import JRFFlow from './pages/jrf/JRFFlow'
 
 // ScrollToTop component to scroll to top on route change
@@ -258,6 +259,20 @@ function AnimatedRoutes() {
           }
         />
         <Route
+          path="/services/design/start"
+          element={
+            <motion.div
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <DesignFlow />
+            </motion.div>
+          }
+        />
+        <Route
           path="/services/testing"
           element={
             <motion.div
@@ -286,62 +301,6 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/services/calibration/start"
-          element={
-            <motion.div
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              variants={pageVariants}
-              transition={pageTransition}
-            >
-              <CalibrationFlow />
-            </motion.div>
-          }
-        />
-        <Route
-          path="/services/simulation/start"
-          element={
-            <motion.div
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              variants={pageVariants}
-              transition={pageTransition}
-            >
-              <SimulationFlow />
-            </motion.div>
-          }
-        />
-        <Route
-          path="/services/product-debugging/start"
-          element={
-            <motion.div
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              variants={pageVariants}
-              transition={pageTransition}
-            >
-              <ProductDebuggingFlow />
-            </motion.div>
-          }
-        />
-        <Route
-          path="/services/certification/start"
-          element={
-            <motion.div
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              variants={pageVariants}
-              transition={pageTransition}
-            >
-              <CertificationFlow />
-            </motion.div>
-          }
-        />
-        <Route
           path="/services/calibration"
           element={
             <motion.div
@@ -352,6 +311,20 @@ function AnimatedRoutes() {
               transition={pageTransition}
             >
               <Calibration />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/services/calibration/start"
+          element={
+            <motion.div
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <CalibrationFlow />
             </motion.div>
           }
         />
@@ -370,6 +343,20 @@ function AnimatedRoutes() {
           }
         />
         <Route
+          path="/services/simulation/start"
+          element={
+            <motion.div
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <SimulationFlow />
+            </motion.div>
+          }
+        />
+        <Route
           path="/services/product-debugging"
           element={
             <motion.div
@@ -384,6 +371,20 @@ function AnimatedRoutes() {
           }
         />
         <Route
+          path="/services/product-debugging/start"
+          element={
+            <motion.div
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <DebuggingFlow />
+            </motion.div>
+          }
+        />
+        <Route
           path="/services/certification"
           element={
             <motion.div
@@ -394,6 +395,20 @@ function AnimatedRoutes() {
               transition={pageTransition}
             >
               <Certification />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/services/certification/start"
+          element={
+            <motion.div
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <CertificationFlow />
             </motion.div>
           }
         />
