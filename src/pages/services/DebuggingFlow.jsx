@@ -1,17 +1,28 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, ArrowRight, Save, CheckCircle } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Save, CheckCircle, Loader2 } from 'lucide-react'
 import ProductDetails from '../jrf/ProductDetails'
 import DebuggingTechnicalDocuments from './DebuggingTechnicalDocuments'
 import ProductDebuggingDetails from './ProductDebuggingDetails'
 import RequestUnderReview from './RequestUnderReview'
 import IssueIdentificationReview from './IssueIdentificationReview'
 import DebuggingSubmissionSuccess from './DebuggingSubmissionSuccess'
+import { getStepData, postStepData, submitFormData } from '../../services/debuggingApi'
+
+const steps = [
+  { id: 'product', title: 'Product Details', component: ProductDetails },
+  { id: 'documents', title: 'Technical Specification Documents', component: DebuggingTechnicalDocuments },
+  { id: 'debugging', title: 'Product Debugging Details', component: ProductDebuggingDetails },
+  { id: 'review', title: 'Request under Review', component: RequestUnderReview },
+  { id: 'issue', title: 'Issue Identification & Review', component: IssueIdentificationReview },
+]
 
 function DebuggingFlow() {
   const navigate = useNavigate()
   const [currentStep, setCurrentStep] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [formData, setFormData] = useState({
     // Product Details
     eutName: '',
@@ -54,42 +65,176 @@ function DebuggingFlow() {
     uploadedDocs: {}
   })
 
-  const steps = [
-    { id: 'product', title: 'Product Details', component: ProductDetails },
-    { id: 'documents', title: 'Technical Specification Documents', component: DebuggingTechnicalDocuments },
-    { id: 'debugging', title: 'Product Debugging Details', component: ProductDebuggingDetails },
-    { id: 'review', title: 'Request under Review', component: RequestUnderReview },
-    { id: 'issue', title: 'Issue Identification & Review', component: IssueIdentificationReview },
-  ]
-
   const CurrentStepComponent = steps[currentStep]?.component
 
-  const handleNext = () => {
+  /**
+   * Extract step-specific data from formData
+   */
+  const getStepDataForPost = (stepId) => {
+    switch (stepId) {
+      case 'product':
+        return {
+          eutName: formData.eutName,
+          eutQuantity: formData.eutQuantity,
+          manufacturer: formData.manufacturer,
+          modelNo: formData.modelNo,
+          serialNo: formData.serialNo,
+          supplyVoltage: formData.supplyVoltage,
+          operatingFrequency: formData.operatingFrequency,
+          current: formData.current,
+          weight: formData.weight,
+          dimensions: formData.dimensions,
+          powerPorts: formData.powerPorts,
+          signalLines: formData.signalLines,
+          softwareName: formData.softwareName,
+          softwareVersion: formData.softwareVersion,
+          industry: formData.industry,
+          industryOther: formData.industryOther,
+          preferredDate: formData.preferredDate,
+          additionalNotes: formData.additionalNotes,
+        }
+      case 'documents':
+        return {
+          uploadedDocs: formData.uploadedDocs,
+        }
+      case 'debugging':
+        return {
+          selectedDebugTests: formData.selectedDebugTests,
+          customTest: formData.customTest,
+          uploadedTestReports: formData.uploadedTestReports,
+          issueDescription: formData.issueDescription,
+        }
+      case 'review':
+        return {} // RequestUnderReview doesn't have form data to save
+      case 'issue':
+        return {
+          engineerComments: formData.engineerComments,
+          issueCategory: formData.issueCategory,
+          severityRating: formData.severityRating,
+          confidenceScore: formData.confidenceScore,
+          debugPath: formData.debugPath,
+        }
+      default:
+        return {}
+    }
+  }
+
+  /**
+   * Merge step data into formData
+   */
+  const mergeStepData = (stepId, stepData) => {
+    setFormData(prev => ({
+      ...prev,
+      ...stepData,
+    }))
+  }
+
+  /**
+   * GET data when entering a step
+   */
+  useEffect(() => {
+    const loadStepData = async () => {
+      const stepId = steps[currentStep]?.id
+      if (!stepId) return
+
+      setLoading(true)
+      try {
+        const result = await getStepData(stepId)
+        if (result.success && result.data && Object.keys(result.data).length > 0) {
+          mergeStepData(stepId, result.data)
+        }
+      } catch (error) {
+        console.error('Error loading step data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadStepData()
+  }, [currentStep])
+
+  /**
+   * POST data when leaving a step
+   */
+  const saveCurrentStep = async () => {
+    const stepId = steps[currentStep]?.id
+    if (!stepId) return
+
+    // Skip saving for review step as it doesn't have form data
+    if (stepId === 'review') return
+
+    setSaving(true)
+    try {
+      const stepData = getStepDataForPost(stepId)
+      const result = await postStepData(stepId, stepData)
+      if (!result.success) {
+        console.error('Error saving step data:', result.error)
+      }
+    } catch (error) {
+      console.error('Error saving step data:', error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleNext = async () => {
+    await saveCurrentStep()
+
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } else {
-      // Submit form
       handleSubmit()
     }
   }
 
-  const handlePrevious = () => {
+  const handlePrevious = async () => {
+    await saveCurrentStep()
+
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
-  const handleSaveDraft = () => {
-    localStorage.setItem('debugging_draft', JSON.stringify(formData))
-    alert('Draft saved successfully!')
+  const handleSaveDraft = async () => {
+    setSaving(true)
+    try {
+      const stepId = steps[currentStep]?.id
+      if (stepId && stepId !== 'review') {
+        const stepData = getStepDataForPost(stepId)
+        await postStepData(stepId, stepData)
+      }
+      alert('Draft saved successfully!')
+    } catch (error) {
+      console.error('Error saving draft:', error)
+      alert('Error saving draft. Please try again.')
+    } finally {
+      setSaving(false)
+    }
   }
 
-  const handleSubmit = () => {
-    // Save to context or send to API
-    console.log('Debugging Form submitted:', formData)
-    setCurrentStep(steps.length) // Move to success page
+  const handleSubmit = async () => {
+    setSaving(true)
+    try {
+      const stepId = steps[currentStep]?.id
+      if (stepId && stepId !== 'review') {
+        const stepData = getStepDataForPost(stepId)
+        await postStepData(stepId, stepData)
+      }
+
+      const result = await submitFormData(formData)
+      if (result.success) {
+        setCurrentStep(steps.length)
+      } else {
+        alert('Error submitting form. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error)
+      alert('Error submitting form. Please try again.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const updateFormData = (updates) => {
@@ -151,30 +296,39 @@ function DebuggingFlow() {
 
           {/* Main Content */}
           <div className="flex-1">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentStep}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                {CurrentStepComponent && (
-                  <CurrentStepComponent
-                    formData={formData}
-                    updateFormData={updateFormData}
-                    onNext={currentStep === 3 ? handleNext : undefined}
-                  />
-                )}
-              </motion.div>
-            </AnimatePresence>
+            {loading ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="text-center">
+                  <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+                  <p className="text-gray-600">Loading step data...</p>
+                </div>
+              </div>
+            ) : (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentStep}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {CurrentStepComponent && (
+                    <CurrentStepComponent
+                      formData={formData}
+                      updateFormData={updateFormData}
+                      onNext={currentStep === 3 ? handleNext : undefined}
+                    />
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            )}
 
             {/* Navigation Buttons */}
             {currentStep !== 3 && ( // Hide navigation on Request under Review step
               <div className="mt-8 flex items-center justify-between">
                 <button
                   onClick={handlePrevious}
-                  disabled={currentStep === 0}
+                  disabled={currentStep === 0 || saving || loading}
                   className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   <ArrowLeft className="w-4 h-4" />
@@ -183,18 +337,38 @@ function DebuggingFlow() {
 
                 <button
                   onClick={handleSaveDraft}
-                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+                  disabled={saving || loading}
+                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  <Save className="w-4 h-4" />
-                  Save as Draft
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      Save as Draft
+                    </>
+                  )}
                 </button>
 
                 <button
                   onClick={handleNext}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                  disabled={saving || loading}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  {currentStep === steps.length - 1 ? 'Submit Request' : currentStep === 2 ? 'Continue to Diagnostics →' : 'Next'}
-                  <ArrowRight className="w-4 h-4" />
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      {currentStep === steps.length - 1 ? 'Submit Request' : currentStep === 2 ? 'Continue to Diagnostics →' : 'Next'}
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
                 </button>
               </div>
             )}

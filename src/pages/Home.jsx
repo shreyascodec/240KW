@@ -440,7 +440,8 @@ function Home() {
                 icon: TestTube,
                 title: 'Advanced Testing',
                 description: 'Comprehensive testing suite covering EMC, RF, Safety, and Environmental testing with real-time analysis and automated reporting.',
-                color: 'from-blue-500 to-blue-600'
+                color: 'from-blue-500 to-blue-600',
+                link: '/services/testing/start'
               },
               {
                 icon: Cpu,
@@ -472,24 +473,35 @@ function Home() {
                 description: 'Automated report generation, test documentation, and compliance certificates with professional formatting.',
                 color: 'from-pink-500 to-pink-600'
               },
-            ].map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1, duration: 0.5 }}
-                whileHover={{ y: -8, scale: 1.02 }}
-                className="group relative p-8 bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 transition-all"
-              >
-                <div className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform`}>
-                  <feature.icon className="w-8 h-8 text-white" />
+            ].map((feature, index) => {
+              const cardContent = (
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1, duration: 0.5 }}
+                  whileHover={{ y: -8, scale: 1.02 }}
+                  className="group relative p-8 bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 transition-all cursor-pointer"
+                >
+                  <div className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform`}>
+                    <feature.icon className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">{feature.title}</h3>
+                  <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+                  <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity`} />
+                </motion.div>
+              )
+
+              return feature.link ? (
+                <Link key={index} to={feature.link} className="block">
+                  {cardContent}
+                </Link>
+              ) : (
+                <div key={index}>
+                  {cardContent}
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">{feature.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{feature.description}</p>
-                <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity`} />
-              </motion.div>
-            ))}
+              )
+            })}
           </div>
         </div>
       </section>

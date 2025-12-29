@@ -1,14 +1,22 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, ArrowRight, Save, CheckCircle } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Save, CheckCircle, Loader2 } from 'lucide-react'
 import CertificationDocuments from './CertificationDocuments'
 import SubmissionReview from './SubmissionReview'
 import CertificationSubmissionSuccess from './CertificationSubmissionSuccess'
+import { getStepData, postStepData, submitFormData } from '../../services/certificationApi'
+
+const steps = [
+  { id: 'documents', title: 'Certification Documents', component: CertificationDocuments },
+  { id: 'review', title: 'Submission Review', component: SubmissionReview },
+]
 
 function CertificationFlow() {
   const navigate = useNavigate()
   const [currentStep, setCurrentStep] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [formData, setFormData] = useState({
     targetRegion: '',
     productName: '',
@@ -21,45 +29,152 @@ function CertificationFlow() {
     confirmUnderstand: false,
   })
 
-  const steps = [
-    { id: 'documents', title: 'Certification Documents', component: CertificationDocuments },
-    { id: 'review', title: 'Submission Review', component: SubmissionReview },
-  ]
-
   const CurrentStepComponent = steps[currentStep]?.component
 
-  const handleNext = () => {
+  /**
+   * Extract step-specific data from formData
+   */
+  const getStepDataForPost = (stepId) => {
+    switch (stepId) {
+      case 'documents':
+        return {
+          targetRegion: formData.targetRegion,
+          productName: formData.productName,
+          productCategory: formData.productCategory,
+          standards: formData.standards,
+          uploadedCertDocs: formData.uploadedCertDocs,
+          additionalNotes: formData.additionalNotes,
+        }
+      case 'review':
+        return {
+          confirmAccurate: formData.confirmAccurate,
+          confirmCorrect: formData.confirmCorrect,
+          confirmUnderstand: formData.confirmUnderstand,
+        }
+      default:
+        return {}
+    }
+  }
+
+  /**
+   * Merge step data into formData
+   */
+  const mergeStepData = (stepId, stepData) => {
+    setFormData(prev => ({
+      ...prev,
+      ...stepData,
+    }))
+  }
+
+  /**
+   * GET data when entering a step
+   */
+  useEffect(() => {
+    const loadStepData = async () => {
+      const stepId = steps[currentStep]?.id
+      if (!stepId) return
+
+      setLoading(true)
+      try {
+        const result = await getStepData(stepId)
+        if (result.success && result.data && Object.keys(result.data).length > 0) {
+          mergeStepData(stepId, result.data)
+        }
+      } catch (error) {
+        console.error('Error loading step data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadStepData()
+  }, [currentStep])
+
+  /**
+   * POST data when leaving a step
+   */
+  const saveCurrentStep = async () => {
+    const stepId = steps[currentStep]?.id
+    if (!stepId) return
+
+    setSaving(true)
+    try {
+      const stepData = getStepDataForPost(stepId)
+      const result = await postStepData(stepId, stepData)
+      if (!result.success) {
+        console.error('Error saving step data:', result.error)
+      }
+    } catch (error) {
+      console.error('Error saving step data:', error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleNext = async () => {
+    await saveCurrentStep()
+
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } else {
-      // Submit form
       handleSubmit()
     }
   }
 
-  const handlePrevious = () => {
+  const handlePrevious = async () => {
+    await saveCurrentStep()
+
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
-  const handleSaveDraft = () => {
-    localStorage.setItem('certification_draft', JSON.stringify(formData))
-    alert('Draft saved successfully!')
+  const handleSaveDraft = async () => {
+    setSaving(true)
+    try {
+      const stepId = steps[currentStep]?.id
+      if (stepId) {
+        const stepData = getStepDataForPost(stepId)
+        await postStepData(stepId, stepData)
+      }
+      alert('Draft saved successfully!')
+    } catch (error) {
+      console.error('Error saving draft:', error)
+      alert('Error saving draft. Please try again.')
+    } finally {
+      setSaving(false)
+    }
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validate confirmations
     if (!formData.confirmAccurate || !formData.confirmCorrect || !formData.confirmUnderstand) {
       alert('Please confirm all statements before submitting.')
       return
     }
-    
-    // Save to context or send to API
-    console.log('Certification Form submitted:', formData)
-    setCurrentStep(steps.length) // Move to success page
+
+    setSaving(true)
+    try {
+      const stepId = steps[currentStep]?.id
+      if (stepId) {
+        const stepData = getStepDataForPost(stepId)
+        await postStepData(stepId, stepData)
+      }
+
+      const result = await submitFormData(formData)
+      if (result.success) {
+        setCurrentStep(steps.length)
+      } else {
+        alert('Error submitting form. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error)
+      alert('Error submitting form. Please try again.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleEdit = () => {
@@ -121,29 +236,38 @@ function CertificationFlow() {
 
           {/* Main Content */}
           <div className="flex-1">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentStep}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                {CurrentStepComponent && (
-                  <CurrentStepComponent
-                    formData={formData}
-                    updateFormData={updateFormData}
-                    onEdit={currentStep === 1 ? handleEdit : undefined}
-                  />
-                )}
-              </motion.div>
-            </AnimatePresence>
+            {loading ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="text-center">
+                  <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+                  <p className="text-gray-600">Loading step data...</p>
+                </div>
+              </div>
+            ) : (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentStep}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {CurrentStepComponent && (
+                    <CurrentStepComponent
+                      formData={formData}
+                      updateFormData={updateFormData}
+                      onEdit={currentStep === 1 ? handleEdit : undefined}
+                    />
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            )}
 
             {/* Navigation Buttons */}
             <div className="mt-8 flex items-center justify-between">
               <button
                 onClick={handlePrevious}
-                disabled={currentStep === 0}
+                disabled={currentStep === 0 || saving || loading}
                 className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {currentStep === 1 ? (
@@ -161,18 +285,38 @@ function CertificationFlow() {
 
               <button
                 onClick={handleSaveDraft}
-                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+                disabled={saving || loading}
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                <Save className="w-4 h-4" />
-                Save & Continue Later
+                {saving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    Save & Continue Later
+                  </>
+                )}
               </button>
 
               <button
                 onClick={handleNext}
-                className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
+                disabled={saving || loading}
+                className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                {currentStep === steps.length - 1 ? 'Submit for Review' : 'Next'}
-                <ArrowRight className="w-4 h-4" />
+                {saving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    {currentStep === steps.length - 1 ? 'Submit for Review' : 'Next'}
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </div>
 
